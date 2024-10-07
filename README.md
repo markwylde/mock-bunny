@@ -33,6 +33,31 @@ server.listen(3000, () => {
 });
 ```
 
+### Docker Usage
+
+You can also run Mock Bunny using Docker. Our Docker image is available on GitHub Container Registry.
+
+To pull the latest image:
+
+```bash
+docker pull ghcr.io/markwylde/mock-bunny:latest
+```
+
+To run the container:
+
+```bash
+docker run -p 3000:3000 ghcr.io/markwylde/mock-bunny:latest
+```
+
+You can customize the storage zone name and access key using environment variables:
+
+```bash
+docker run -p 3000:3000 \
+  -e STORAGE_ZONE_NAME=my-custom-zone \
+  -e ACCESS_KEY=my-custom-key \
+  ghcr.io/markwylde/mock-bunny:latest
+```
+
 ### API
 
 The mock server supports the following operations:
