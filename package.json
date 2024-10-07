@@ -1,0 +1,42 @@
+{
+  "name": "mock-bunny",
+  "version": "0.0.0-development",
+  "type": "module",
+  "description": "Mock the Bunny.net API",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markwylde/upload-to-bunny.git"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsc",
+    "test": "tsx --test **/*.test.ts"
+  },
+  "files": [
+    "lib",
+    "README.md"
+  ],
+  "keywords": [
+    "bunny",
+    "bunny.net",
+    "upload",
+    "cdn",
+    "static"
+  ],
+  "author": "Mark Wylde <me@markwylde.com> (https://github.com/markwylde)",
+  "license": "MIT",
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/release-notes-generator": "^14.0.1",
+    "@types/node": "^22.7.4",
+    "conventional-changelog-conventionalcommits": "^8.0.0"
+  },
+  "dependencies": {
+    "tsx": "^4.19.1"
+  }
+}
