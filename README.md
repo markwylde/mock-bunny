@@ -7,6 +7,7 @@ Mock Bunny is a lightweight mock server that simulates the Bunny.net CDN API. It
 - Simulates Bunny.net Storage API endpoints
 - Supports GET, PUT, and DELETE operations
 - In-memory storage for quick testing
+- File system storage for persistent testing
 - Configurable storage zone name and access key
 - TypeScript support
 
@@ -25,7 +26,8 @@ import mockBunny from 'mock-bunny';
 
 const server = mockBunny({
   storageZoneName: 'my-storage',
-  accessKey: 'my-access-key'
+  accessKey: 'my-access-key',
+  uploadFolder: './uploaded-files'
 });
 
 server.listen(3000, () => {
@@ -49,12 +51,14 @@ To run the container:
 docker run -p 3000:3000 ghcr.io/markwylde/mock-bunny:latest
 ```
 
-You can customize the storage zone name and access key using environment variables:
+You can customize the storage zone name, access key, and upload folder using environment variables:
 
 ```bash
 docker run -p 3000:3000 \
   -e STORAGE_ZONE_NAME=my-custom-zone \
   -e ACCESS_KEY=my-custom-key \
+  -e UPLOAD_FOLDER=/app/uploaded-files \
+  -v /path/on/host:/app/uploaded-files \
   ghcr.io/markwylde/mock-bunny:latest
 ```
 
@@ -75,7 +79,8 @@ You can configure the mock server by passing options to the `mockBunny` function
 ```javascript
 mockBunny({
   storageZoneName: 'custom-storage', // Default: 'test-storage'
-  accessKey: 'custom-key' // Default: 'test-access-key'
+  accessKey: 'custom-key', // Default: 'test-access-key'
+  uploadFolder: './custom-upload-folder' // Optional: for file system storage
 });
 ```
 

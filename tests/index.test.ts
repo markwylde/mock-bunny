@@ -1,11 +1,14 @@
 import assert from 'node:assert';
 import test from 'node:test';
 import http from 'node:http';
-import createServer from '../src/createServer';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { createServer } from '../src/createServer';
 
 const PORT = 3000;
 const STORAGE_ZONE_NAME = 'test-storage';
 const ACCESS_KEY = 'test-access-key';
+const UPLOAD_FOLDER = './uploaded-files';
 
 function makeRequest(method: string, path: string, body?: string): Promise<[http.IncomingMessage, string]> {
   return new Promise((resolve, reject) => {
@@ -29,7 +32,14 @@ function makeRequest(method: string, path: string, body?: string): Promise<[http
   });
 }
 
-test('Mock Bunny CDN Server', async (t) => {
+async function cleanupUploadFolder() {
+  try {
+    await fs.rm(UPLOAD_FOLDER, { recursive: true });
+  } catch {
+  }
+}
+
+test('Mock Bunny CDN Server without uploadFolder', async (t) => {
   const server = createServer({ storageZoneName: STORAGE_ZONE_NAME, accessKey: ACCESS_KEY });
   server.listen(PORT);
 
@@ -119,6 +129,60 @@ test('Mock Bunny CDN Server', async (t) => {
 
     assert.strictEqual(res.statusCode, 405);
     assert.strictEqual(JSON.parse(body).Message, 'Method not allowed');
+  });
+
+  server.close();
+});
+
+test('Mock Bunny CDN Server with uploadFolder', async (t) => {
+  await cleanupUploadFolder();
+
+  const server = createServer({ storageZoneName: STORAGE_ZONE_NAME, accessKey: ACCESS_KEY, uploadFolder: UPLOAD_FOLDER });
+  server.listen(PORT);
+
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  await t.test('PUT request - create new file (with upload folder)', async () => {
+    const [res, body] = await makeRequest('PUT', 'file1.txt', 'Hello, Upload!');
+    assert.strictEqual(res.statusCode, 201);
+    assert.strictEqual(JSON.parse(body).Message, 'File created successfully');
+
+    // Check that the file was written to the folder
+    const filePath = path.join(UPLOAD_FOLDER, 'file1.txt');
+    const fileContent = await fs.readFile(filePath, 'utf-8');
+    assert.strictEqual(fileContent, 'Hello, Upload!');
+  });
+
+  await t.test('GET request - retrieve file from upload folder', async () => {
+    const [res, body] = await makeRequest('GET', 'file1.txt');
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(body, 'Hello, Upload!');
+  });
+
+  await t.test('PUT request - update existing file in upload folder', async () => {
+    const [res, body] = await makeRequest('PUT', 'file1.txt', 'Updated File Content');
+    assert.strictEqual(res.statusCode, 201);
+    assert.strictEqual(JSON.parse(body).Message, 'File created successfully');
+
+    // Check the updated content
+    const filePath = path.join(UPLOAD_FOLDER, 'file1.txt');
+    const fileContent = await fs.readFile(filePath, 'utf-8');
+    assert.strictEqual(fileContent, 'Updated File Content');
+  });
+
+  await t.test('DELETE request - delete file from upload folder', async () => {
+    const [res, body] = await makeRequest('DELETE', 'file1.txt');
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(JSON.parse(body).Message, 'File deleted successfully');
+
+    // Check that the file no longer exists
+    const filePath = path.join(UPLOAD_FOLDER, 'file1.txt');
+    try {
+      await fs.access(filePath);
+      assert.fail('File should not exist');
+    } catch {
+      // Success: file does not exist
+    }
   });
 
   server.close();
