@@ -27,7 +27,10 @@ import mockBunny from 'mock-bunny';
 const server = mockBunny({
   storageZoneName: 'my-storage',
   accessKey: 'my-access-key',
-  uploadFolder: './uploaded-files'
+  // (optional) if set will store files in the specified folder
+  uploadFolder: './uploaded-files',
+  // (optional) if true will not require accessKey for GET requests
+  publicRead: true
 });
 
 server.listen(3000, () => {
@@ -58,6 +61,7 @@ docker run -p 3000:3000 \
   -e STORAGE_ZONE_NAME=my-custom-zone \
   -e ACCESS_KEY=my-custom-key \
   -e UPLOAD_FOLDER=/app/uploaded-files \
+  -e PUBLIC_READ="true" \
   -v /path/on/host:/app/uploaded-files \
   ghcr.io/markwylde/mock-bunny:latest
 ```
@@ -80,7 +84,8 @@ You can configure the mock server by passing options to the `mockBunny` function
 mockBunny({
   storageZoneName: 'custom-storage', // Default: 'test-storage'
   accessKey: 'custom-key', // Default: 'test-access-key'
-  uploadFolder: './custom-upload-folder' // Optional: for file system storage
+  uploadFolder: './custom-upload-folder', // Optional: for file system storage
+  publicRead: true, // Optional: if true will not require accessKey for GET requests
 });
 ```
 
